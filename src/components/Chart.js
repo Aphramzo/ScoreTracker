@@ -8,13 +8,25 @@ Exporting(HighCharts);
 
 const chartId = v4();
 class Chart extends Component {
+    constructor(props) {
+        super(props);
+        this.calculateSeries = this.calculateSeries.bind(this);
+    }
     componentDidMount() {
+        this.calculateSeries();
+    }
+
+    componentDidUpdate(){
+        this.calculateSeries();
+    }
+    
+    calculateSeries() {
         const average = [];
         const averageScore = [];
         this.props.scores.map(score => {
             average.push(score);
             const newAverage = average.reduce((a,b) => a + b, 0) / average.length;
-            averageScore.push(newAverage);
+            return averageScore.push(newAverage);
         });
         HighCharts.chart(chartId, {
             title: {
@@ -31,10 +43,6 @@ class Chart extends Component {
     }
 
     render() {
-        const {
-            scores,
-        } = this.props;
-    
         return (
             <div id={chartId} />
         );
