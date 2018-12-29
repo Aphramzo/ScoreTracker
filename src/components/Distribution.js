@@ -41,6 +41,14 @@ class Chart extends Component {
             },
             xAxis: {
                 categories,
+                title: {
+                    text: 'Score',
+                },
+            },
+            yAxis: {
+                title: {
+                    text: '# of Games',
+                },
             },
             chart: {
                 animation: false,

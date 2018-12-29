@@ -26,6 +26,16 @@ class Chart extends Component {
                 animation: false,
                 type: this.props.type,
             },
+            xAxis: {
+                title: {
+                    text: 'Game Number',
+                },
+            },
+            yAxis: {
+                title: {
+                    text: 'Score',
+                },
+            },
             series: [{
                 name: this.props.seriesName,
                 data: []
