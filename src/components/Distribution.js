@@ -8,6 +8,9 @@ Exporting(HighCharts);
 class Chart extends Component {
     constructor(props) {
         super(props);
+        this.state = {
+            gameNumber: 0,
+        };
         
         this.addScore = this.addScore.bind(this);
         this.buildChart = this.buildChart.bind(this);
@@ -18,40 +21,54 @@ class Chart extends Component {
     }
 
     buildChart() {
+        let categories = [];
+        let data = [];
+        
+        for(let i = 0; i < this.props.max; i++) {
+            categories = [
+                ...categories,
+                i,
+            ];
+
+            data = [
+                ...data,
+                0,
+            ];
+        }
         this.chart = HighCharts.chart(this.props.id, {
             title: {
                 text: this.props.title,
             },
+            xAxis: {
+                categories,
+            },
             chart: {
                 animation: false,
-                type: this.props.type,
+                type: 'column',
             },
             series: [{
-                name: this.props.seriesName,
-                data: []
-            }, {
-                name: `${this.props.seriesName} average`,
-                data: [],
+                name: '# of Games',
+                data,   
             }],
         });
     }
 
     addScore() {
         const propScores = this.props.scores;
-        const scores = this.chart.series[0].data;
-
+        
         // If we have already filled out scores, stop the interval
-        if (scores.length === propScores.length) {
+        if (this.state.gameNumber === propScores.length) {
           clearInterval(this.interval);
           return;
         }
 
-        const scoresToAverage = propScores.slice(0, scores.length+1);
-        const average = scoresToAverage.reduce((a,b) => a + b, 0) / scoresToAverage.length;
+        const gameScore = this.chart.series[0].data[propScores[this.state.gameNumber]].x;
 
-
-        this.chart.series[0].addPoint(propScores[scores.length], true);
-        this.chart.series[1].addPoint(average, true);
+        this.chart.series[0].data[gameScore].update(this.chart.series[0].data[gameScore].y + 1)
+        
+        this.setState({
+            gameNumber: this.state.gameNumber + 1,
+        });
     }
 
     render() {
@@ -64,15 +81,17 @@ class Chart extends Component {
 Chart.propTypes = {
     id: PropTypes.string.isRequired,
     interval: PropTypes.number,
+    max: PropTypes.number,
+    min: PropTypes.number,
     scores: PropTypes.array.isRequired,
     seriesName: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
-    type: PropTypes.string,
 };
 
 Chart.defaultProps = {
     interval: 500,
-    type: 'line',
+    max: 100,
+    min: 0,
 };
 
 export default Chart;
