@@ -10,36 +10,53 @@ const chartId = v4();
 class Chart extends Component {
     constructor(props) {
         super(props);
-        this.calculateSeries = this.calculateSeries.bind(this);
+        
+        this.addScore = this.addScore.bind(this);
+        this.buildChart = this.buildChart.bind(this);
     }
     componentDidMount() {
-        this.calculateSeries();
+        this.buildChart();
+        this.interval = window.setInterval(this.addScore, this.props.interval);
     }
 
     componentDidUpdate(){
         this.calculateSeries();
     }
-    
-    calculateSeries() {
-        const average = [];
-        const averageScore = [];
-        this.props.scores.map(score => {
-            average.push(score);
-            const newAverage = average.reduce((a,b) => a + b, 0) / average.length;
-            return averageScore.push(newAverage);
-        });
-        HighCharts.chart(chartId, {
+
+    buildChart() {
+        this.chart = HighCharts.chart(chartId, {
             title: {
-                text: 'Scores',
+                text: this.props.title,
+            },
+            chart: {
+                animation: false,
             },
             series: [{
-                name: 'Original',
-                data: this.props.scores
+                name: this.props.seriesName,
+                data: []
             }, {
-                name: 'Original Average',
-                data: averageScore,
+                name: `${this.props.seriesName} average`,
+                data: [],
             }],
         });
+    }
+
+    addScore() {
+        const propScores = this.props.scores;
+        const scores = this.chart.series[0].data;
+
+        // If we have already filled out scores, stop the interval
+        if (scores.length === propScores.length) {
+          clearInterval(this.interval);
+          return;
+        }
+
+        const scoresToAverage = propScores.slice(0, scores.length+1);
+        const average = scoresToAverage.reduce((a,b) => a + b, 0) / scoresToAverage.length;
+
+
+        this.chart.series[0].addPoint(propScores[scores.length], true);
+        this.chart.series[1].addPoint(average, true);
     }
 
     render() {
@@ -50,7 +67,14 @@ class Chart extends Component {
 };
 
 Chart.propTypes = {
+    interval: PropTypes.number,
     scores: PropTypes.array.isRequired,
-}
+    seriesName: PropTypes.string.isRequired,
+    title: PropTypes.string.isRequired,
+};
+
+Chart.defaultProps = {
+    interval: 500,
+};
 
 export default Chart;
